@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+	<h1>Category {{category.name}}</h1>
+
+	<a href="{{url_for('newItem', category_id=category.id)}}">Create item</a>
+
+	<a href="{{url_for('editCategory', category_id=category.id)}}">Edit category</a>
+	<a href="{{url_for('deleteCategory', category_id=category.id)}}">Delete category</a>
+
+	{% if items %}
+	<ul>
+		{% for item in items  %}
+			<li>
+				<a href="{{url_for('showItem', category_id=category.id, item_id=item.id)}}">{{item.name}}</a>
+				<a href="{{url_for('editItem', category_id=category.id, item_id=item.id)}}">Edit</a>
+				<a href="{{url_for('deleteItem', category_id=category.id, item_id=item.id)}}">Delete</a>
+			</li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+
+	<a href="{{url_for('showCatalog')}}">Back to catalog</a>
+
+{% endblock %}

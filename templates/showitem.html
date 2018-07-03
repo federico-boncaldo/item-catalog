@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+	<h1>Item {{item.name}}</h1>
+
+	<dl>
+		<dt>Description</dt>
+		<dd>{{item.description}}</dd>
+		<dt>Price</dt>
+		<dd>{{item.price}}</dd>
+		<dt>Category</dt>
+		<dd>{{category.name}}</dd>
+	</dl>
+
+	<a href="{{url_for('editItem', category_id=category.id, item_id=item.id)}}">Edit</a>
+	<a href="{{url_for('deleteItem', category_id=category.id, item_id=item.id)}}">Delete</a>
+
+	<a href="{{url_for('showCategory', category_id=category.id)}}">Back to {{category.name}}</a>	
+{% endblock %}
