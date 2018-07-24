@@ -1,9 +1,31 @@
 <!DOCTYPE html>
 <html>
-	{% include 'header.html' %}
+	<head>
+		<title>{% block title %} {% endblock %} - Catalog</title>
+		{% block script %}{% endblock %}
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css')}}">
+		<link href="https://fonts.googleapis.com/css?family=Merienda" rel="stylesheet">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous"> 
+	</head>
+		
 	<body>
-		{% block content %}
-		{% endblock %}
+		{% include 'header.html' %}
+		<div class="container content">
+			{% with messages = get_flashed_messages() %}
+				{% if messages%}
+			<div id="flash">
+				<ul>
+					{% for message in messages %}
+						<li><strong> {{ message }} </strong></li>
+					{% endfor %}
+				</ul>
+			</div>
+				{% endif %}
+			{% endwith %}
+			{% block content %}
+			{% endblock %}
+			{% include 'footer.html' %}
+		</div>
 	</body>
-	{% include 'footer.html' %}
+	
 </html>

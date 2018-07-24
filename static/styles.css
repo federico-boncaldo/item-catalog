@@ -1,0 +1,99 @@
+* {
+    font-family: 'Merienda', cursive;
+}
+
+
+header {
+	background-color: blue;
+	padding: 15px 0;
+}
+
+body {
+	background-color: #ececec !important;
+}
+
+.content {
+	background-color: white;
+	border: 1px solid #cacace;
+	margin-top: 20px;
+}
+
+li {
+	list-style: none;
+}
+
+.auth {
+	text-align: right;
+}
+
+.btn {
+	background-color: red;
+	color: white;
+}
+
+.home .col-md-6 {
+	margin: 10px 0;
+}
+
+.home .list-items {
+	border-left: 1px solid #cacace;
+}
+
+body input, 
+body select, 
+body textarea {
+	display: block;
+	margin-bottom: 10px;
+}
+
+header a {
+	color: white;
+}
+
+body header a:hover {
+	text-decoration: none;
+	color: black;
+}
+
+body a:hover {
+	color: blue;
+	text-decoration: none;
+}
+
+#signinButton {
+	margin-top: 10px;
+}
+
+.btn {
+	margin: 10px;
+}
+
+
+body .btn:hover {
+	background-color: blue;
+	color: black;
+}
+
+body .change {
+	color: red;
+}
+
+body .change:hover {
+	color: black;
+}
+
+#flash {
+    border: 1px solid;
+    margin: 10px;
+    padding: 10px;
+    background: blue;
+    color: white;
+}
+
+#flash ul {
+	margin: 0;
+	padding: 0;
+}
+/*.btn.back {
+	margin-bottom: 10px;
+}*/

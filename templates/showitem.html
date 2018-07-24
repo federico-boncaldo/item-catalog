@@ -1,15 +1,21 @@
 {% extends 'layout.html' %}
-{% block title %}{% endblock %}
+{% block title %}Item {{item.name}}{% endblock %}
 {% block content %}
 	<h1>Item {{item.name}}</h1>
 
 	<dl>
-		<dt>Description</dt>
-		<dd>{{item.description}}</dd>
-		<dt>Price</dt>
-		<dd>{{item.price}}</dd>
-		<dt>Category</dt>
-		<dd>{{category.name}}</dd>
+		{% if item.description != '' %}
+			<dt>Description</dt>
+			<dd>{{item.description}}</dd>
+		{% endif %}
+		{% if item.price != '' %}
+			<dt>Price</dt>
+			<dd>{{item.price}} €</dd>
+		{% endif %}
+		{% if category.name != '' %}
+			<dt>Category</dt>
+			<dd>{{category.name}}</dd>
+		{% endif %}
 	</dl>
 
 	{% if 'email' in session %}
@@ -18,5 +24,7 @@
 		</div>
 	{% endif %}
 
-	<a href="{{url_for('showCategory', category_id=category.id)}}">Back to {{category.name}}</a>	
+	<div>
+		<a class="btn" href="{{url_for('showCategory', category_id=category.id, category_name=category.name)}}">< Back to {{category.name}}</a>
+	</div>	
 {% endblock %}

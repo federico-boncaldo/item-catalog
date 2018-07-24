@@ -1,15 +1,24 @@
 {% extends 'layout.html' %}
-{% block title %}Edit item{% endblock %}
+{% block title %}Edit item {{item.name}} in category {{itemCategory.name}}{% endblock %}
 {% block content %}
-	<h1>Edit item {{item.name}} in category {{category.name}}</h1>
-	<form action="{{url_for('editItem', category_id=category.id, item_id=item.id)}}" method="post">
+	<h1>Edit item {{item.name}} in category {{itemCategory.name}}</h1>
+	<form action="{{url_for('editItem', category_id=itemCategory.id, item_id=item.id, item_name=item.name)}}" method="post">
+		<label>Name:</label> 
 		<input type="text" name="name" placeholder="{{item.name}}" >
+		<label>Price:</label>
 		<input type="text" name="price" placeholder="{{item.price}}" >
+		<label>Description:</label>
 		<textarea name="description" placeholder="{{item.description}}" ></textarea>
+		<label>Category:</label>
+		<select name="category_id" id="categories">
+			{% for category in categories %}
+				<option value="{{category.id}}" {% if category.name == itemCategory.name %}selected{% endif %}>{{category.name}}</option>
+			{% endfor %}
+		</select>
 
-		<input type="submit" value="Edit">
+		<input class="btn" type="submit" value="Edit">
 	</form>
 
-	<a href="{{url_for('showItem', category_id=category.id, item_id=item.id)}}">Cancel</a>
+	<a class="btn" href="{{url_for('showItem', category_id=item.category_id, item_id=item.id, item_name=item.name)}}">Cancel</a>
 
 {% endblock %}
