@@ -173,6 +173,18 @@ def gdisconnect():
 		flash("Failed to revoke token for given user")
 		return redirect(url_for('showCatalog'))
 
+# JSON API endpoint
+@app.route('/catalog.json')
+def catalogJSON():
+	categories = session.query(Category).all()
+	categoriesObj = {'Categories':[]}
+	for category in categories:
+		items = session.query(Item).filter_by(category_id=category.id).all()
+		categoryObj = category.serialize
+		categoryObj['Items'] = [i.serialize for i in items]
+		categoriesObj['Categories'].append(categoryObj)
+
+	return jsonify(categoriesObj)
 
 # Show all categories and the latest 10 items
 @app.route('/')
