@@ -188,7 +188,6 @@ def catalogJSON():
 
 # Show all categories and the latest 10 items
 @app.route('/')
-@app.route('/catalog')
 def showCatalog():
 	categories = session.query(Category).all()
 	items = session.query(Item).limit(10)
@@ -202,12 +201,13 @@ def newCategory():
 		newCategory = Category(name=request.form['name'], description=request.form['description'])
 		session.add(newCategory)
 		session.commit()
+		flash("New category created.")
 		return redirect(url_for('showCatalog'))
 	else:
 		return render_template('newcategory.html')
 
-@app.route('/category/<int:category_id>')
-def showCategory(category_id):
+@app.route('/category/<int:category_id>/<string:category_name>')
+def showCategory(category_id, category_name):
 	category = session.query(Category).filter_by(id=category_id).one()
 	items = session.query(Item).filter_by(category_id=category_id).all()
 	return render_template(
@@ -246,6 +246,7 @@ def deleteCategory(category_id, category_name):
 
 		session.delete(category)
 		session.commit()
+		flash("Category %s deleted" %category.name)
 		return redirect(url_for('showCatalog'))
 	else:
 		return render_template(
@@ -261,13 +262,14 @@ def newItem(category_id, category_name):
 			price=request.form['price'], category_id=category.id)
 		session.add(newItem)
 		session.commit()
-		return redirect(url_for('showCategory', category_id=category.id))
+		flash("Category %s deleted" %category.name)
+		return redirect(url_for('showCategory', category_id=category.id, category_name=category.name))
 	else:
 		return render_template(
 			'newitem.html', category=category)
 
-@app.route('/category/<int:category_id>/item/<int:item_id>')
-def showItem(category_id, item_id):
+@app.route('/category/<int:category_id>/item/<int:item_id>/<string:item_name>')
+def showItem(category_id, item_id, item_name):
 	category = session.query(Category).filter_by(id=category_id).one()
 	item = session.query(Item).filter_by(id=item_id).one()
 	return render_template(
@@ -278,19 +280,31 @@ def editItem(category_id, item_id, item_name):
 	if 'email' not in login_session:
 		return redirect('/login')
 	item = session.query(Item).filter_by(id=item_id).one()
+	category = session.query(Category).filter_by(id=category_id).one()
+	categories = session.query(Category).all()
 	if request.method == 'POST':
 		if request.form['name']:
 			item.name = request.form['name']
 		if request.form['description']:
 			item.description = request.form['description']
 		if request.form['price']:
-			item.price = request.form['price']
+			item.price = request.form['price']		
+		if request.form['category_id']:
+			item.category_id = request.form['category_id']
+
+		categoryName = category.name
+		for itemCategory in categories:
+			if itemCategory.id == item.category_id:
+				categoryName = itemCategory.name
+
 		session.add(item)
 		session.commit()
-		return redirect(url_for('showCategory', category_id=category.id))
+		flash("Item %s edited." %item.name)
+		return redirect(url_for('showCategory', category_id=item.category_id, category_name=categoryName))
 	else:
+
 		return render_template(
-			'edititem.html', category=category, item=item)
+			'edititem.html', itemCategory=category, item=item, categories=categories)
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/<string:item_name>/delete', methods=['GET', 'POST'])
 def deleteItem(category_id, item_id, item_name):
@@ -301,7 +315,8 @@ def deleteItem(category_id, item_id, item_name):
 	if request.method == 'POST':
 		session.delete(item)
 		session.commit()
-		return redirect(url_for('showCategory', category_id=category.id))
+		flash("Item %s deleted." %item.name)
+		return redirect(url_for('showCategory', category_id=category.id, category_name=category.name))
 	else:
 		return render_template(
 			'deleteitem.html', category=category, item=item)
