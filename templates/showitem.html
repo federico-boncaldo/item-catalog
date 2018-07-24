@@ -12,8 +12,11 @@
 		<dd>{{category.name}}</dd>
 	</dl>
 
-	<a href="{{url_for('editItem', category_id=category.id, item_id=item.id)}}">Edit</a>
-	<a href="{{url_for('deleteItem', category_id=category.id, item_id=item.id)}}">Delete</a>
+	{% if 'email' in session %}
+		<div>
+			<a class="change" href="{{url_for('editItem', category_id=item.category_id, item_id=item.id, item_name=item.name)}}">Edit</a> | <a class="change" href="{{url_for('deleteItem', category_id=item.category_id, item_id=item.id, item_name=item.name)}}">Delete</a>
+		</div>
+	{% endif %}
 
 	<a href="{{url_for('showCategory', category_id=category.id)}}">Back to {{category.name}}</a>	
 {% endblock %}

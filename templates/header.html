@@ -1,3 +1,21 @@
-	<head>
-		<title>{% block title %}{% endblock %}</title>
-	</head>
+<header class="top-menu">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6">
+				<h1><a class="logo" href="{{url_for('showCatalog')}}">Catalog App</a></h1>
+			</div>
+
+			{% if request.path != '/login' %}
+			<div class="col-md-6 auth">
+				<h3>				
+					{% if 'email' in session %}
+					<a href="{{url_for('gdisconnect')}}" class="btn">Logout</a>
+					{% else %}
+					<a href="{{url_for('showLogin')}}" class="btn">Login</a>
+					{% endif %}
+				</h3>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</header>

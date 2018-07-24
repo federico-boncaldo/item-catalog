@@ -3,7 +3,18 @@
 {% block content %}
 	<h1>Category {{category.name}}</h1>
 
-	<a href="{{url_for('newItem', category_id=category.id)}}">Create item</a>
+	<dl>
+	{% if category.description != '' %}
+		<dt>Description</dt>
+		<dd>{{category.description}}</dd>
+	{% endif %}
+	</dl>
+	
+	{% if 'email' in session %}
+	<div>
+		<a class="btn" href="{{url_for('newItem', category_id=category.id, category_name=category.name)}}">Add item</a>
+	</div>	
+	
 
 	<a href="{{url_for('editCategory', category_id=category.id)}}">Edit category</a>
 	<a href="{{url_for('deleteCategory', category_id=category.id)}}">Delete category</a>
@@ -12,9 +23,12 @@
 	<ul>
 		{% for item in items  %}
 			<li>
-				<a href="{{url_for('showItem', category_id=category.id, item_id=item.id)}}">{{item.name}}</a>
-				<a href="{{url_for('editItem', category_id=category.id, item_id=item.id)}}">Edit</a>
-				<a href="{{url_for('deleteItem', category_id=category.id, item_id=item.id)}}">Delete</a>
+				<a href="{{url_for('showItem', category_id=item.category_id, item_id=item.id, item_name=item.name)}}">{{item.name}}</a>
+				{% if 'email' in session %}
+					<div>
+						<a class="change" href="{{url_for('editItem', category_id=item.category_id, item_id=item.id, item_name=item.name)}}">Edit</a> | <a class="change" href="{{url_for('deleteItem', category_id=item.category_id, item_id=item.id, item_name=item.name)}}">Delete</a>
+					</div>
+				{% endif %}
 			</li>
 		{% endfor %}
 	</ul>
