@@ -210,6 +210,7 @@ def showCatalog():
     return render_template('catalog.html', categories=categories, items=items)
 
 
+# Create a new category
 @app.route('/category/new', methods=['GET', 'POST'])
 def newCategory():
     if 'email' not in login_session:
@@ -226,6 +227,7 @@ def newCategory():
         return render_template('newcategory.html')
 
 
+# Show a specific category
 @app.route('/category/<int:category_id>/<string:category_name>')
 def showCategory(category_id, category_name):
     category = session.query(Category).filter_by(id=category_id).one()
@@ -234,6 +236,7 @@ def showCategory(category_id, category_name):
         'showcategory.html', category=category, items=items)
 
 
+# Edit a specific category
 @app.route(
     '/category/<int:category_id>/<string:category_name>/edit',
     methods=['GET', 'POST'])
@@ -255,6 +258,7 @@ def editCategory(category_id, category_name):
             'editcategory.html', category=category)
 
 
+# Delete a specific category
 @app.route(
     '/category/<int:category_id>/<string:category_name>/delete',
     methods=['GET', 'POST'])
@@ -278,6 +282,7 @@ def deleteCategory(category_id, category_name):
             'deletecategory.html', category=category)
 
 
+# Create a new item
 @app.route(
     '/category/<int:category_id>/<string:category_name>/item/new',
     methods=['GET', 'POST'])
@@ -292,7 +297,7 @@ def newItem(category_id, category_name):
             price=request.form['price'], category_id=category.id)
         session.add(newItem)
         session.commit()
-        flash("Category %s deleted" % category.name)
+        flash("Item %s created" % newItem.name)
         return redirect(
             url_for(
                 'showCategory',
@@ -305,6 +310,7 @@ def newItem(category_id, category_name):
             'newitem.html', category=category)
 
 
+# Show a specific item
 @app.route('/category/<int:category_id>/item/<int:item_id>/<string:item_name>')
 def showItem(category_id, item_id, item_name):
     category = session.query(Category).filter_by(id=category_id).one()
@@ -315,6 +321,7 @@ def showItem(category_id, item_id, item_name):
         item=item)
 
 
+# Edit a specific item
 @app.route(
     '/category/<int:category_id>/item/<int:item_id>/<string:item_name>/edit',
     methods=['GET', 'POST'])
@@ -358,6 +365,7 @@ def editItem(category_id, item_id, item_name):
             )
 
 
+# Delete a specific item
 @app.route(
     '/category/<int:category_id>/item/<int:item_id>/<string:item_name>/delete',
     methods=['GET', 'POST'])
