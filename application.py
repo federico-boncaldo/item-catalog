@@ -1,18 +1,26 @@
 #!/usr/bin/env python2.7
-from flask import Flask, render_template, request, redirect, url_for
+from flask import (Flask,
+                   render_template,
+                   request,
+                   redirect,
+                   url_for,
+                   make_response,
+                   jsonify,
+                   flash,
+                   session as login_session
+                   )
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Category, Item
 
-from flask import session as login_session
 import random
 import string
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
 import json
-from flask import make_response, jsonify, flash
+
 import requests
 
 app = Flask(__name__)
