@@ -196,8 +196,8 @@ def gdisconnect():
         return redirect(url_for('showCatalog'))
 
 
-# JSON API endpoint
-@app.route('/catalog.json')
+# JSON API endpoints
+@app.route('/catalog/JSON')
 def catalogJSON():
     categories = session.query(Category).all()
     categoriesObj = {'Categories': []}
@@ -208,6 +208,15 @@ def catalogJSON():
         categoriesObj['Categories'].append(categoryObj)
 
     return jsonify(categoriesObj)
+
+
+@app.route('/item/<int:item_id>/JSON')
+def itemJSON(item_id):
+    item = session.query(Item).filter_by(id=item_id).one_or_none()
+    if item is None:
+        return jsonify({'Error': 'Item not found'})
+    else:    
+        return jsonify(Item=item.serialize)
 
 
 # Show all categories and the latest 10 items
