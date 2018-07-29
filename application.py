@@ -13,6 +13,7 @@ from flask import (Flask,
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Category, Item
+from forms import CategoryForm, ItemForm
 
 import random
 import string
@@ -22,6 +23,8 @@ import httplib2
 import json
 
 import requests
+
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -168,6 +171,33 @@ def getUserID(email):
         return None
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'email' not in login_session:
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def checkCategory(category_id):
+    category = session.query(Category).filter_by(id=category_id).one_or_none()
+    if category is None:
+        flash("Category not found.")
+        return redirect(url_for('showCatalog'))
+    else:
+        return category
+
+
+def checkItem(item_id):
+    item = session.query(Item).filter_by(id=item_id).one_or_none()
+    if item is None:
+        flash("Item not found.")
+        return redirect(url_for('showCatalog'))
+    else:
+        return item
+
+
 # Disconnect - Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
 def gdisconnect():
@@ -215,7 +245,7 @@ def itemJSON(item_id):
     item = session.query(Item).filter_by(id=item_id).one_or_none()
     if item is None:
         return jsonify({'Error': 'Item not found'})
-    else:    
+    else:
         return jsonify(Item=item.serialize)
 
 
@@ -229,25 +259,29 @@ def showCatalog():
 
 # Create a new category
 @app.route('/category/new', methods=['GET', 'POST'])
+@login_required
 def newCategory():
-    if 'email' not in login_session:
-        return redirect('/login')
-    if request.method == 'POST':
+    form = CategoryForm()
+    if form.validate_on_submit():
         newCategory = Category(
             name=request.form['name'],
-            description=request.form['description'])
+            description=request.form['description'],
+            user_id=login_session['user_id'])
         session.add(newCategory)
         session.commit()
         flash("New category created.")
         return redirect(url_for('showCatalog'))
     else:
-        return render_template('newcategory.html')
+        if request.method == 'POST':
+            flash("Error while creating the category. \
+                Please fill all the required fields")
+        return render_template('newcategory.html', form=form)
 
 
 # Show a specific category
 @app.route('/category/<int:category_id>/<string:category_name>')
 def showCategory(category_id, category_name):
-    category = session.query(Category).filter_by(id=category_id).one()
+    category = checkCategory(category_id)
     items = session.query(Item).filter_by(category_id=category_id).all()
     return render_template(
         'showcategory.html', category=category, items=items)
@@ -257,11 +291,14 @@ def showCategory(category_id, category_name):
 @app.route(
     '/category/<int:category_id>/<string:category_name>/edit',
     methods=['GET', 'POST'])
+@login_required
 def editCategory(category_id, category_name):
-    if 'email' not in login_session:
-        return redirect('/login')
-    category = session.query(Category).filter_by(id=category_id).one()
-    if request.method == 'POST':
+    category = checkCategory(category_id)
+    form = CategoryForm()
+    if form.validate_on_submit():
+        if category.user_id != login_session['user_id']:
+            flash("User not authorised to edit the category.")
+            return redirect(url_for('showCatalog'))
         if request.form['name']:
             category.name = request.form['name']
         if request.form['description']:
@@ -271,19 +308,25 @@ def editCategory(category_id, category_name):
         flash("Category %s edited" % category.name)
         return redirect(url_for('showCatalog'))
     else:
+        if request.method == 'POST':
+            flash("Error while editing the category. \
+                Please fill all the required fields")
         return render_template(
-            'editcategory.html', category=category)
+            'editcategory.html', category=category, form=form)
 
 
 # Delete a specific category
 @app.route(
     '/category/<int:category_id>/<string:category_name>/delete',
     methods=['GET', 'POST'])
+@login_required
 def deleteCategory(category_id, category_name):
-    if 'email' not in login_session:
-        return redirect('/login')
-    category = session.query(Category).filter_by(id=category_id).one()
+    category = checkCategory(category_id)
+    form = CategoryForm()
     if request.method == 'POST':
+        if category.user_id != login_session['user_id']:
+            flash("User not authorised to delete the category.")
+            return redirect(url_for('showCatalog'))
         items = session.query(Item).filter_by(category_id=category_id).all()
         if items:
             for item in items:
@@ -296,22 +339,24 @@ def deleteCategory(category_id, category_name):
         return redirect(url_for('showCatalog'))
     else:
         return render_template(
-            'deletecategory.html', category=category)
+            'deletecategory.html', category=category, form=form)
 
 
 # Create a new item
 @app.route(
     '/category/<int:category_id>/<string:category_name>/item/new',
     methods=['GET', 'POST'])
+@login_required
 def newItem(category_id, category_name):
-    if 'email' not in login_session:
-        return redirect('/login')
-    category = session.query(Category).filter_by(id=category_id).one()
-    if request.method == 'POST':
+    category = checkCategory(category_id)
+    form = ItemForm()
+    if form.validate_on_submit():
         newItem = Item(
             name=request.form['name'],
             description=request.form['description'],
-            price=request.form['price'], category_id=category.id)
+            price=request.form['price'],
+            category_id=category.id,
+            user_id=login_session['user_id'])
         session.add(newItem)
         session.commit()
         flash("Item %s created" % newItem.name)
@@ -323,15 +368,18 @@ def newItem(category_id, category_name):
                 )
             )
     else:
+        if request.method == 'POST':
+            flash("Error while creating the item. \
+                Please fill all the required fields.")
         return render_template(
-            'newitem.html', category=category)
+            'newitem.html', category=category, form=form)
 
 
 # Show a specific item
 @app.route('/category/<int:category_id>/item/<int:item_id>/<string:item_name>')
 def showItem(category_id, item_id, item_name):
-    category = session.query(Category).filter_by(id=category_id).one()
-    item = session.query(Item).filter_by(id=item_id).one()
+    category = checkCategory(category_id)
+    item = checkItem(item_id)
     return render_template(
         'showitem.html',
         category=category,
@@ -342,13 +390,16 @@ def showItem(category_id, item_id, item_name):
 @app.route(
     '/category/<int:category_id>/item/<int:item_id>/<string:item_name>/edit',
     methods=['GET', 'POST'])
+@login_required
 def editItem(category_id, item_id, item_name):
-    if 'email' not in login_session:
-        return redirect('/login')
-    item = session.query(Item).filter_by(id=item_id).one()
-    category = session.query(Category).filter_by(id=category_id).one()
+    category = checkCategory(category_id)
+    item = checkItem(item_id)
     categories = session.query(Category).all()
-    if request.method == 'POST':
+    form = ItemForm()
+    if form.validate_on_submit():
+        if item.user_id != login_session['user_id']:
+            flash("User not authorised to edit the item.")
+            return redirect(url_for('showCatalog'))
         if request.form['name']:
             item.name = request.form['name']
         if request.form['description']:
@@ -374,11 +425,15 @@ def editItem(category_id, item_id, item_name):
                 )
             )
     else:
+        if request.method == 'POST':
+            flash("Error while editing the item. \
+                Please fill all the required fields.")
         return render_template(
             'edititem.html',
             itemCategory=category,
             item=item,
-            categories=categories
+            categories=categories,
+            form=form
             )
 
 
@@ -386,12 +441,15 @@ def editItem(category_id, item_id, item_name):
 @app.route(
     '/category/<int:category_id>/item/<int:item_id>/<string:item_name>/delete',
     methods=['GET', 'POST'])
+@login_required
 def deleteItem(category_id, item_id, item_name):
-    if 'email' not in login_session:
-        return redirect('/login')
-    category = session.query(Category).filter_by(id=category_id).one()
-    item = session.query(Item).filter_by(id=item_id).one()
+    category = checkCategory(category_id)
+    item = checkItem(item_id)
+    form = ItemForm()
     if request.method == 'POST':
+        if item.user_id != login_session['user_id']:
+            flash("User not authorised to delete the item.")
+            return redirect(url_for('showCatalog'))
         session.delete(item)
         session.commit()
         flash("Item %s deleted." % item.name)
@@ -405,7 +463,8 @@ def deleteItem(category_id, item_id, item_name):
         return render_template(
             'deleteitem.html',
             category=category,
-            item=item)
+            item=item,
+            form=form)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
