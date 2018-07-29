@@ -4,10 +4,13 @@
 	
 	<h1>Create new category</h1>
 	<form action="{{url_for('newCategory')}}" method="post">
-		<input type="text" name="name" placeholder="Name" >
+		{{ form.csrf_token }}
+		<input type="text" name="name" placeholder="Name *" >
 		<input type="text" name="description" placeholder="Description" >
 		<input class="btn" type="submit" value="Add">
 	</form>
+
+	<p>* Required</p>
 
 	<a class="btn" href="{{url_for('showCatalog')}}">Cancel</a>
 

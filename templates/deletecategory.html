@@ -3,6 +3,7 @@
 {% block content %}
 	<h1>Delete category {{category.name}}</h1>
 	<form action="{{url_for('deleteCategory', category_id=category.id, category_name=category.name)}}" method="post">
+		{{ form.csrf_token }}
 		<input class="btn" type="submit" value="Delete">
 	</form>
 
